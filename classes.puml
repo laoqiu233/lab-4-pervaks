@@ -1,0 +1,205 @@
+@startuml diagram
+
+package exceptions {
+    class CosmicObjectSpeedException {
+        + CosmicObjectSpeedException()
+        + CosmicObjectSpeedException(max_speed : double)
+    }
+
+    RuntimeException <|-- CosmicObjectSpeedException
+
+    class UnreachablePersonException {
+        + UnreachablePersonException(p1 : Person, p2 : Person)
+    }
+
+    RuntimeException <|-- UnreachablePersonException
+
+    class UnreachableCityException {
+        + UnreachableCityException(s : SpaceShip, p : Person)
+        + UnreachableCityException(s : SpaceShip, c : City)
+    }
+
+    Exception <|-- UnreachableCityException
+
+    class UnreachablePlanetException {
+        + UnreachablePlanetException(s : SpaceShip)
+        + UnreachablePlanetException(s : SpaceShip, t : Planet)
+        + UnreachablePlanetException(s : SpaceShip, max_speed : double)
+    }
+
+    Exception <|-- UnreachablePlanetException
+}
+
+package world {
+
+    enum Planet {
+        EARTH
+        MOON
+
+        - escape_velocity : double 
+
+        - Planet(escape_velocity : double)
+        + double escapeVelocity()
+    }
+
+    class PlanetDistances {
+        - distances : HashMap<Planet, HashMap<Planet, Double>> {readOnly}
+
+        - PlanetDistances()
+        + double getDistace(a : Planet, b : Planet)
+    }
+
+    enum City {
+        FLOWER_CITY
+        GREEN_CITY
+        SUN_CITY
+
+        DAVILON
+        GRABENBURG
+        BREKHENVILLE
+        SAN_KOMARAK
+        LOS_SWINOS
+        FANTOMAS
+
+        - planet : Planet
+
+        - City(planet : Planet)
+        + Planet getPlanet()
+        + String toString()
+    }
+
+}
+
+package skills {
+    interface Talkable {
+        + void say(message : String, ...recipients : Talkable)
+        + void call(target : Talkable)
+        + void endCall()
+        + Talkable getCallTarget()
+    }
+
+    class InCallException {
+        + InCallException(t : Talkable)
+    }
+
+    Exception <|-- InCallException
+    Talkable +-- InCallException
+
+    interface Observer {
+        + void observe(CosmicObject obj);
+    }
+
+    interface Carriable {
+        + void addPerson(p : Person)
+        + ArrayList<Person> getCrew()
+        + void discardCrew(city : City)
+    }
+
+    interface Locatable {
+        + City getCity()
+        + void setCity(city : City)
+    }
+}
+
+package cosmicobjects {
+
+    abstract class CosmicObject {
+        - orbitingPlanet : Planet
+        - targetPlanet : Planet
+        - speed : double
+        - max_speed : double
+
+        + double getSpeed()
+        + void setSpeed(speed : double)
+        + double getMaxSpeed()
+        + Planet getTargetPlanet()
+        # void setTargetPlanet(p : Planet)
+        {abstract} + void startTravel(Planet p)
+        {abstract} + void endTravel()
+        + Planet getOrbitingPlanet()
+        # void setOrbitingPlanet(planet : Planet)
+    }
+
+    class SpaceShip {
+        - crew : ArrayList<Person>
+        - name : String
+        - speed : double
+        - target_planet : Planet
+
+        + SpaceShip(name : String, orbiting_planet : Planet)
+        + String toString()
+        + boolean equals(Object o)
+        + int hashCode()
+        + void addPerson(p : Person)
+        + ArrayList<Person> getCrew()
+        + double getSpeed()
+        # void setSpeed(speed : double)
+        + void startTravel(Planet p)
+        + void endTravel()
+        + Planet getTrajectory()
+        + void discardCrew(city : City)
+    }
+
+    CosmicObject <|-- SpaceShip
+    Carriable <|-- SpaceShip
+}
+
+package people {
+
+    class Person {
+        + Person(name : String, city : City)
+        + String toString()
+        + boolean equals(Object o)
+        + int hashCode()
+
+        + String getName()
+        + City getCity()
+        + void setCity(c : City)
+        + void say(message : String, ...recipients : Talkable)
+        + void call(recipients : Talkable)
+        + void endCall()
+        + Talkable getCallTarget()
+    }
+
+    Talkable <|-- Person
+    Locatable <|-- Person
+
+    abstract class CallConnection {
+        ~ Talkable target;
+        + CallConnection(target : Talkable)
+        {abstract} void say(message : String)
+    }
+
+    Person +-l- CallConnection
+
+    class Astronomer {
+        + Astronomer(name : String, city : City)
+        + void observe(obj : CosmicObject)
+    }
+
+    Person <|-- Astronomer
+    Observer <|-- Astronomer
+
+    class Lord {
+        + Lord(name : String, city : City)
+        + void giveOrder(message : String, ...recipients : Talkable)
+    }
+
+    Person <|-- Lord
+
+    class Commissioner {
+        + Commissioner(name : String, city : City)
+    }
+
+    Person <|-- Commissioner
+
+    Class Midget {
+        + Midget(name : String, city : City)
+        + void revolt()
+    }
+
+    Person <|-- Midget
+
+}
+
+@enduml
